@@ -62,8 +62,8 @@ const CartItem = sequelize.define(
   "CartItem",
   {
     quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
-    selectedSize: { type: DataTypes.STRING(8), allowNull: false, defaultValue: "M" },
-    selectedColor: { type: DataTypes.STRING(32), allowNull: false, defaultValue: "" },
+    selectedSize: { type: DataTypes.STRING(8), allowNull: false, defaultValue: "M", unique: false },
+    selectedColor: { type: DataTypes.STRING(32), allowNull: false, defaultValue: "", unique: false },
   },
   {
     indexes: [
