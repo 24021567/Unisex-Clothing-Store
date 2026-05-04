@@ -76,7 +76,7 @@ app.use((err, req, res, next) => {
 });
 
 async function bootstrap() {
-  await sequelize.sync({ alter: true });
+  await sequelize.sync({ force: true });
   await sessionStore.sync();
 
   const adminEmail = process.env.ADMIN_EMAIL || "admin@shop.com";
