@@ -1,5 +1,12 @@
 function requireAuth(req, res, next) {
   if (!req.currentUser) {
+    // Check if this is an AJAX request
+    if (req.headers['x-requested-with'] === 'XMLHttpRequest' || req.xhr) {
+      return res.status(401).json({
+        success: false,
+        message: "Vui lòng đăng nhập để tiếp tục"
+      });
+    }
     return res.redirect("/login");
   }
   return next();
