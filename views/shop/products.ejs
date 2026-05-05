@@ -175,3 +175,199 @@
   </div>
 </section>
 <%- include("../partials/footer") %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Load cart count khi trang load
+  loadCartCount();
+
+  // Xử lý form thêm vào giỏ hàng
+  document.querySelectorAll('form[action*="/shop/cart/add/"]').forEach(form => {
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+      const action = this.action;
+
+      try {
+        // Tạo URLSearchParams thay vì FormData để đảm bảo parse đúng
+        const formDataObj = {};
+        for (let [key, value] of formData.entries()) {
+          formDataObj[key] = value;
+        }
+        const searchParams = new URLSearchParams(formDataObj);
+
+        const response = await fetch(action, {
+          method: 'POST',
+          body: searchParams,
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+          console.error('Response not ok:', response.status, response.statusText);
+          if (response.status === 401) {
+            // Chưa đăng nhập
+            showNotification('Vui lòng đăng nhập để thêm vào giỏ hàng', 'error');
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 2000);
+            return;
+          }
+          const errorText = await response.text();
+          console.error('Error response:', errorText);
+          showNotification('Có lỗi xảy ra khi thêm vào giỏ hàng', 'error');
+          return;
+        }
+
+        const result = await response.json();
+        console.log('Success response:', result);
+
+        if (result.success) {
+          // Cập nhật số lượng giỏ hàng trong header
+          const cartBadge = document.querySelector('.cart-badge');
+          if (cartBadge) {
+            cartBadge.textContent = result.cartCount;
+          }
+
+          // Hiển thị thông báo thành công
+          showNotification(result.message, 'success');
+
+          // Hiển thị nút thanh toán
+          showCheckoutButton();
+        } else {
+          showNotification(result.message || 'Có lỗi xảy ra', 'error');
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+        showNotification('Có lỗi xảy ra khi thêm vào giỏ hàng', 'error');
+      }
+    });
+  });
+});
+
+function showNotification(message, type) {
+  // Xóa thông báo cũ
+  const existingNotification = document.querySelector('.notification');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+
+  // Tạo thông báo mới
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+  `;
+
+  if (type === 'success') {
+    notification.style.backgroundColor = '#28a745';
+  } else {
+    notification.style.backgroundColor = '#dc3545';
+  }
+
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  // Tự động ẩn sau 3 giây
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease-out';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+function showCheckoutButton() {
+  // Xóa nút cũ nếu có
+  const existingButton = document.querySelector('.checkout-float-btn');
+  if (existingButton) {
+    existingButton.remove();
+  }
+
+  // Tạo nút thanh toán
+  const checkoutBtn = document.createElement('a');
+  checkoutBtn.href = '/shop/cart';
+  checkoutBtn.className = 'checkout-float-btn btn btn-primary btn-lg';
+  checkoutBtn.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    border-radius: 50px;
+    padding: 15px 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: bounceIn 0.5s ease-out;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+  `;
+  checkoutBtn.innerHTML = '<i class="fas fa-shopping-cart me-2"></i>Thanh toán';
+
+  document.body.appendChild(checkoutBtn);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .checkout-float-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    color: white !important;
+    text-decoration: none;
+  }
+`;
+document.head.appendChild(style);
+</script>
+
+<script>
+function loadCartCount() {
+  // Chỉ load nếu user đã đăng nhập (có currentUser)
+  <% if (currentUser && currentUser.role === "customer") { %>
+  fetch('/shop/cart/count', {
+    method: 'GET',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    },
+    credentials: 'same-origin'
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      const cartBadge = document.querySelector('.cart-badge');
+      if (cartBadge) {
+        cartBadge.textContent = result.cartCount;
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error loading cart count:', error);
+  });
+  <% } %>
+}
+</script>
