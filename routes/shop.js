@@ -104,34 +104,72 @@ router.get("/all", async (req, res) => {
 });
 
 router.post("/cart/add/:productId", requireAuth, async (req, res) => {
-  const product = await Product.findByPk(req.params.productId);
-  if (!product) return res.redirect("/shop/products");
-  const selectedSize = typeof req.body.size === "string" && req.body.size.trim() ? req.body.size.trim() : "M";
-  const selectedColor =
-    typeof req.body.color === "string" && req.body.color.trim() ? req.body.color.trim() : "";
+  try {
+    const product = await Product.findByPk(req.params.productId);
+    if (!product) return res.status(404).json({ success: false, message: "Sản phẩm không tồn tại" });
 
-  const existing = await CartItem.findOne({
-    where: {
-      UserId: req.currentUser.id,
-      ProductId: product.id,
-      selectedSize,
-      selectedColor,
-    },
-  });
+    const selectedSize = typeof req.body.size === "string" && req.body.size.trim() ? req.body.size.trim() : "M";
+    const selectedColor =
+      typeof req.body.color === "string" && req.body.color.trim() ? req.body.color.trim() : "";
 
-  if (existing) {
-    existing.quantity += 1;
-    await existing.save();
-  } else {
-    await CartItem.create({
-      UserId: req.currentUser.id,
-      ProductId: product.id,
-      quantity: 1,
-      selectedSize,
-      selectedColor,
+    const existing = await CartItem.findOne({
+      where: {
+        UserId: req.currentUser.id,
+        ProductId: product.id,
+        selectedSize,
+        selectedColor,
+      },
+    });
+
+    if (existing) {
+      existing.quantity += 1;
+      await existing.save();
+    } else {
+      await CartItem.create({
+        UserId: req.currentUser.id,
+        ProductId: product.id,
+        quantity: 1,
+        selectedSize,
+        selectedColor,
+      });
+    }
+
+    // Tính lại tổng số lượng trong giỏ
+    const totalQuantity = await CartItem.sum("quantity", {
+      where: { UserId: req.currentUser.id },
+    });
+
+    res.json({
+      success: true,
+      message: "Đã thêm vào giỏ hàng",
+      cartCount: totalQuantity || 0
+    });
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    res.status(500).json({
+      success: false,
+      message: "Có lỗi xảy ra khi thêm vào giỏ hàng"
     });
   }
-  res.redirect("/shop/cart");
+});
+
+router.get("/cart/count", requireAuth, async (req, res) => {
+  try {
+    const totalQuantity = await CartItem.sum("quantity", {
+      where: { UserId: req.currentUser.id },
+    });
+
+    res.json({
+      success: true,
+      cartCount: totalQuantity || 0
+    });
+  } catch (error) {
+    console.error('Error getting cart count:', error);
+    res.status(500).json({
+      success: false,
+      message: "Có lỗi xảy ra khi lấy số lượng giỏ hàng"
+    });
+  }
 });
 
 router.get("/cart", requireAuth, async (req, res) => {
