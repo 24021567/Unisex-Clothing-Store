@@ -3,6 +3,12 @@
 Ứng dụng web bán hàng quần áo Unisex đơn giản, có giao diện người dùng và trang admin.
 Dự án sử dụng Node.js, Express, Sequelize với SQLite, EJS cho view engine và Stripe/QR cho thanh toán.
 
+## Link online
+
+```
+https://unisex-clothing-store.onrender.com
+```
+
 ## Tính năng chính
 
 - Đăng ký/đăng nhập người dùng
@@ -51,16 +57,6 @@ Sau khi chạy, mở trình duyệt tại:
 ```
 http://localhost:3000
 ```
-
-## Link online
-
-Nếu bạn đã triển khai dự án trên Render, hãy điền URL ứng dụng của bạn vào phần này dưới dạng:
-
-```
-https://your-app-name.onrender.com
-```
-
-> Ví dụ: `https://unisex-clothing-store.onrender.com`
 
 ## Triển khai lên Render
 
