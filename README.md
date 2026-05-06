@@ -52,6 +52,31 @@ Sau khi chạy, mở trình duyệt tại:
 http://localhost:3000
 ```
 
+## Link online
+
+Nếu bạn đã triển khai dự án trên Render, hãy điền URL ứng dụng của bạn vào phần này dưới dạng:
+
+```
+https://your-app-name.onrender.com
+```
+
+> Ví dụ: `https://unisex-clothing-store.onrender.com`
+
+## Triển khai lên Render
+
+1. Tạo một web service mới trên Render.
+2. Chọn `Node.js` và kết nối repository của bạn.
+3. Chỉ định `build command` (nếu cần) và `start command` là:
+   ```bash
+   npm start
+   ```
+4. Thêm các biến môi trường trong Render:
+   - `SESSION_SECRET`
+   - `ADMIN_EMAIL`
+   - `ADMIN_PASSWORD`
+   - `STRIPE_SECRET_KEY`
+5. Deploy và mở ứng dụng từ URL Render được cung cấp.
+
 ## Cấu trúc thư mục
 
 - `app.js`: entrypoint ứng dụng
